@@ -1,5 +1,4 @@
 import java.io.*;
-import java.lang.reflect.Field;
 import java.util.*;
 
 public class BattleshipwoutObj {
@@ -32,12 +31,12 @@ public class BattleshipwoutObj {
     }
 
 
-    static record Coordinate(int column, int row) {
+    record Coordinate(int column, int row) {
 
     }
 
     public enum FieldStatus {
-        Free, Ship, Ship_hit, Water_hit;
+        Free, Ship, Ship_hit, Water_hit
     }
 
     static int distanceCalculator(final Coordinate start, final Coordinate end) {
@@ -147,37 +146,34 @@ public class BattleshipwoutObj {
 
     }
 
-    static void ShowField(final FieldStatus field, final boolean showShips) {
-        if (showShips) {
-            switch (field) {
-                case Free:
-                    System.out.print(" ");
-                case Ship:
-                    System.out.print("O");
-                case Ship_hit:
-                    System.out.print("X");
-                case Water_hit:
-                    System.out.println("X");
+    static void showFieldStatus(final FieldStatus field, final boolean showShips) {
 
-            }
-
-        } else {
-            switch (field) {
-                case Free:
-                    System.out.print(" ");
-                case Ship:
-                    System.out.print(" ");
-                case Ship_hit:
-                    System.out.print("X");
-                case Water_hit:
-                    System.out.print("X");
-                                
-            }
-
-
+        switch (field) {
+            case Free:
+                System.out.print(" ");
+                break;
+            case Ship:
+                System.out.print(showShips ? "O" : " ");
+                break;
+            case Ship_hit:
+                System.out.print("X");
+                break;
+            case Water_hit:
+                System.out.println("X");
+                break;
         }
     }
+    static void placeShip(final Coordinate start, final Coordinate end, final FieldStatus[][] field) {
+
+    }
+
+    public static void main(String[] args) {
+
+       Coordinate coordTest= getRandomEndCoordinate(getRandomCoordinate(),5);
+        System.out.println(coordTest.toString());
+    }
 }
+
 
 
 
