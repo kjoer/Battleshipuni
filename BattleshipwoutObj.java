@@ -1,4 +1,5 @@
 import java.io.*;
+import java.lang.reflect.Field;
 import java.util.*;
 
 public class BattleshipwoutObj {
@@ -56,34 +57,41 @@ public class BattleshipwoutObj {
     }
 
     static int getMaxSurroundingColumn(final Coordinate start, final Coordinate end) {
-    return Math.min(BattleshipwoutObj.SIZE-1, Math.max(start.column(),end.column())+1);
+        return Math.min(BattleshipwoutObj.SIZE - 1, Math.max(start.column(), end.column()) + 1);
     }
+
     static int getMaxSurroundingRow(final Coordinate start, final Coordinate end) {
-        return Math.min(BattleshipwoutObj.SIZE-1, Math.max(start.row(),end.row())+1);
+        return Math.min(BattleshipwoutObj.SIZE - 1, Math.max(start.row(), end.row()) + 1);
     }
+
     static int getMinSurroundingColumn(final Coordinate start, final Coordinate end) {
-        return Math.max(BattleshipwoutObj.SIZE-1, Math.min(start.column(),end.column())-1);
+        return Math.max(BattleshipwoutObj.SIZE - 1, Math.min(start.column(), end.column()) - 1);
     }
+
     static int getMinSurroundingRow(final Coordinate start, final Coordinate end) {
-        return Math.max(BattleshipwoutObj.SIZE-1, Math.min(start.row(),end.row())-1);
+        return Math.max(BattleshipwoutObj.SIZE - 1, Math.min(start.row(), end.row()) - 1);
     }
 
     static void showRowNumber(final int row) {
-        int temp = row;
-        if (temp >= 10) {
-            temp++;
-            System.out.print(temp);
-        } else if (temp >= 0) {
-            temp++;
-            System.out.print(" " + temp);
+        if (row < 9) {
+            System.out.print(" ");
         }
-
+        System.out.print(String.valueOf(row + 1));
     }
+//        int temp = row;
+//        if (temp >= 10) {
+//            temp++;
+//            System.out.print(temp);
+//        } else if (temp >= 0) {
+//            temp++;
+//            System.out.print(" " + temp);
+//
+//    }
 
     static Coordinate coordinateConverter(final String input) {
 //        String coordinateLast = input;
         String convertUppercase = input.toUpperCase();
-        Character[] convertHelper = {' ','A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
+        Character[] convertHelper = {' ', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
         for (int i = 1; i < 11; i++) {
             if (convertHelper[i].equals(convertUppercase.charAt(0))) {
 
@@ -128,15 +136,46 @@ public class BattleshipwoutObj {
             else if (randomCoord == 1) endCoordinate = new Coordinate(start.column - distance, start.row);
             else if (randomCoord == 2) endCoordinate = new Coordinate(start.column, start.row + distance);
             else if (randomCoord == 3) endCoordinate = new Coordinate(start.column, start.row - distance);
-        } while (endCoordinate != null || endCoordinate.column < 1 || endCoordinate.column > 10 || endCoordinate.row < 1 || endCoordinate.row > 10);
+        } while (endCoordinate != null && (endCoordinate.column < 1 || endCoordinate.column > 10 || endCoordinate.row < 1 || endCoordinate.row > 10));
         //+x,-x,+y,-y
 
-        if (endCoordinate.column < 1 || endCoordinate.column > 10 || endCoordinate.row < 1 || endCoordinate.row > 10) {
-
-        }
+//        if (endCoordinate.column < 1 || endCoordinate.column > 10 || endCoordinate.row < 1 || endCoordinate.row > 10) {
+//
+//        }
         return endCoordinate;
 
 
+    }
+
+    static void ShowField(final FieldStatus field, final boolean showShips) {
+        if (showShips) {
+            switch (field) {
+                case Free:
+                    System.out.print(" ");
+                case Ship:
+                    System.out.print("O");
+                case Ship_hit:
+                    System.out.print("X");
+                case Water_hit:
+                    System.out.println("X");
+
+            }
+
+        } else {
+            switch (field) {
+                case Free:
+                    System.out.print(" ");
+                case Ship:
+                    System.out.print(" ");
+                case Ship_hit:
+                    System.out.print("X");
+                case Water_hit:
+                    System.out.print("X");
+                                
+            }
+
+
+        }
     }
 }
 
