@@ -11,7 +11,7 @@ public class BattleShipUni {
         private static final BufferedReader READER = new BufferedReader(new InputStreamReader(System.in));
 
         public static int getRandomInt(final int bound) {
-            return Utility.RANDOM.nextInt(bound);
+            return Utility.RANDOM.nextInt(SIZE);
         }
 
         public static String readStringFromConsole() throws IOException {
@@ -25,7 +25,7 @@ public class BattleShipUni {
 
     static void ENTER_SHIP_COORDINATE_PROMPT(final int digit, final String startOrEnd) {
 
-        String StringCoordinatePrompt = String.format("Geben Sie die %s koordinate für ein Schiff der länge %d ein", startOrEnd, digit);
+        String StringCoordinatePrompt = String.format("Geben Sie die %skoordinate für ein Schiff der länge %d ein", startOrEnd, digit);
     }
 
     static Coordinate getRandomCoordinate() {
@@ -111,15 +111,28 @@ public class BattleShipUni {
 
     }
 
-    static void getStartCoordinatePrompt(final int length, String start) {
-        start = "Start";
+    static void getStartCoordinatePrompt(final int length) {
+        String start = "Start";
         ENTER_SHIP_COORDINATE_PROMPT(length, start);
     }
 
-    static void getEndCoordinatePrompt(final int length, String end) {
-        end = "End";
+    static void getEndCoordinatePrompt(final int length) {
+        String end = "End";
         ENTER_SHIP_COORDINATE_PROMPT(length, end);
     }
+
+    static Coordinate readStartCoordinate(final int length) {
+        String coordinatePrompt = String.format(PROMPT_TEMPLATE, "Start", length);
+        return readCoordinate(coordinatePrompt);
+
+
+    }
+
+    static Coordinate readEndCoordinate(final int length) {
+        String stringCoordinatePrompt = String.format(PROMPT_TEMPLATE, "End", length);
+        return readCoordinate(stringCoordinatePrompt);
+    }
+
 
     static boolean checkInputValidCoordinate(final String input) {
         String validCoords = "^[A-Ja-j](10|[1-9])$";
@@ -245,7 +258,7 @@ public class BattleShipUni {
                     }
                 }
             }
-        } else if (field[shot.row][shot.column] == FieldStatus.Ship_hit && field[shot.row + 1][shot.column] == FieldStatus.Free && field[shot.row + 1][shot.column] == FieldStatus.Free) {
+        } else if (field[shot.row][shot.column] == FieldStatus.Ship_hit && field[shot.row + 1][shot.column] == FieldStatus.Free && field[shot.row - 1][shot.column] == FieldStatus.Free) {
             for (int columnWalkerRight = shot.column; columnWalkerRight < SIZE; columnWalkerRight++) {
                 if (field[shot.row][columnWalkerRight] == FieldStatus.Free) {
                     for (int columnWalkerLeft = shot.column; columnWalkerLeft > 0; columnWalkerLeft--) {
@@ -257,6 +270,7 @@ public class BattleShipUni {
                 }
             }
         } else return false;
+        return false;//später bearbeiten
     }
 
     static void setAllFree(final FieldStatus[][] field) {
@@ -280,7 +294,8 @@ public class BattleShipUni {
         return hitCounter;
     }
 
-    static void fillWaterHits(final Coordinate shot, final FieldStatus[][] field) {
+    static void fillWaterHits(final Coordinate shot, final FieldStatus[][] field) {//im Grunde einfacher über while schleife zu lösen eg. while
+        // field[shot.row][columnWalkerLeft)==FieldStatus.Ship_hit columnWalkerLeft++...
         if (isShipSunk(shot, field)) {
             for (int columnWalkerRight = shot.column; columnWalkerRight < SIZE; columnWalkerRight++) {
                 for (int columnWalkerLeft = shot.column; columnWalkerLeft > 0; columnWalkerLeft--) {
@@ -362,6 +377,104 @@ public class BattleShipUni {
         return field[start.row + 1][columnWalkerLeft] == FieldStatus.Free && field[start.row - 1][columnWalkerLeft] == FieldStatus.Free;
     }
 
+    static Coordinate readCoordinate(final String prompt) {
+        while (true) {
+            System.out.println(prompt);
+            try {
+                String input = Utility.readStringFromConsole();
+
+                if (input.equals("exit") || input.equals("Exit")) {
+                    System.exit(0);
+                }
+                if (checkInputValidCoordinate(input)) {
+                    return coordinateConverter(input);
+                }
+            } catch (IOException e) {
+                System.out.println("Ungueltige Eingabe " + e);
+
+            }
+
+
+        }
+    }
+
+    static boolean isThereFreeCoord(final FieldStatus[][] field) {
+        for (int i = 0; i < field.length; i++) {
+            for (int j = 0; j < field[i].length; j++) {
+                if (field[i][j] == FieldStatus.Free || field[i][j] == FieldStatus.Ship) {
+                    return true;
+                } else return false;
+            }
+        }
+        return false;
+    }
+
+    static Coordinate getRandomUnshotCoordinate(final FieldStatus[][] field) {
+        if (isThereFreeCoord(field)) {
+            while (true) {
+                Coordinate randCoord = getRandomCoordinate();
+                if (field[randCoord.row][randCoord.column] == FieldStatus.Free || field[randCoord.row][randCoord.column] == FieldStatus.Ship) {
+                    return randCoord;
+                }
+            }
+
+        } else throw new IllegalStateException();
+
+    }
+
+    static final String PROMPT_TEMPLATE = "Geben Sie die %skoordinate für ein Schiff der länge %d ein";
+    static final int ALL_HIT = 14;
+
+//    static Coordinate readStartCoordinate(final int length) {
+//        String coordinatePrompt = String.format(PROMPT_TEMPLATE, "Start", length);
+//        return readCoordinate(coordinatePrompt);
+//
+//
+//    }
+//
+//    static Coordinate readEndCoordinate(final int length) {
+//        String stringCoordinatePrompt = String.format(PROMPT_TEMPLATE, "End", length);
+//        return readCoordinate(stringCoordinatePrompt);
+//    }
+
+    static boolean areAllHit(final FieldStatus[][] field) {
+        return ALL_HIT == countHits(field);
+    }
+
+    static boolean endCondition(final FieldStatus[][] ownField, final FieldStatus[][] otherField) {
+        if (areAllHit(ownField) || areAllHit(otherField)) {
+            return true;
+        }
+        return false;
+    }
+
+    static int lengthCounter(final int length, final Coordinate start, final Coordinate end) {
+        int lengthCounter = 0;
+        if (start.row < end.row) {
+            for (int i = 0; i < end.row; i++) {
+                lengthCounter++;
+            }
+
+        }
+        if (start.row > end.row) {
+        }
+        if (start.column < end.column) {
+
+        }
+        if (start.column > end.column) {
+
+        }
+    }
+
+
+    static boolean validPosition(final Coordinate start, final Coordinate end, final int length, final FieldStatus[][] field) {
+        isNoConflict(start, end, field);
+        if (length == lengthCounter(length, start, end) {
+            return true;
+        }
+
+
+    }
 
     public static void main(String[] args) {
         FieldStatus[][] fieldInitializer = new FieldStatus[SIZE][SIZE];
@@ -370,21 +483,6 @@ public class BattleShipUni {
 
     }
 }
-
-
-//    double[] noten = new double[25]; //Deklaration und Initialisiserung
-//    // die Maschine belegt im Speicher einen block mit 25 doubles (bi) und deswegen performanter und schneller als 25 einzelne doubles
-//    int laenge = noten.length; //Arrays haben eine vorher festgelegte länge, die laenge kann ueber .length abgefragt werden
-//    //Man kann mit dem Index effizient auf jedes Element eines Arrays zugreifen, das ist nicht selbstverständlich -> GdI
-//    // Arrays können mehrdimensional sein
-//    double[][] matrix = new double[52][52];
-//    double[] firstRow = matrix[0]; //Zugriff auf erste Dimension liefert zweite Dimension
-//    double upperLeftElement = firstRow[0];
-//    double upperLeftElement1 = matrix[0][0];
-//Größe der Dimensionen
-//nur nion primitive Datatypes können null sein
-
-
 
 
 
