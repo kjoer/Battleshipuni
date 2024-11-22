@@ -125,48 +125,32 @@ public class Main {
         }
     }
 
-    // static void placeShips(final Coordinate start, final Coordinate end, final FieldStatus[][] field) {
-//
-    //      if (onOneLine(start, end) == false) {
-    //} else if (onOneLine(start, end)) {
-    //   if (noConflict(start, end, field)) {
-    //           for (int i = start.row; i < end.row; i++) {
-    //               field[i][start.column] = FieldStatus.Ship;
-    //         }
-    //   }
-    //          if (start.row > end.row) {
-    //              field[i][start.column] = FieldStatus.Ship;
-    //          }
-    //    }
-    //  if (start.column < end.column) {
-    //    for (int i = start.column; i < end.column; i++) {
-    //      field[start.row][i] = FieldStatus.Ship;
-    //             }
-    //       }
-    //     if (start.column > end.column) {
-    //       for (int i = start.column; i > end.column; i--) {
-    //         field[start.row][i] = FieldStatus.Ship;
-    //   }
-    // }
-    //}
-    //}
-    //
-    // }
     static void placeShips(final Coordinate start, final Coordinate end, final FieldStatus[][] field) {
-        if (start.column() == end.column()) {
-            for (int row = Math.min(start.row(), end.row()); row <= Math.max(start.row(), end.row()); row++) {
-                field[start.column()][row] = FieldStatus.Ship;
+        if (onOneLine(start, end) == false) {
+        } else if (onOneLine(start, end)) {
+            if (noConflict(start, end, field)) {
+                for (int i = start.row; i < end.row; i++) {
+                    field[i][start.column] = FieldStatus.Ship;
+                }
             }
-        } else {
-            for (
-                    int column = Math.min(start.column(), end.column());
-                    column <= Math.max(start.column(), end.column());
-                    column++
-            ) {
-                field[column][start.row()] = FieldStatus.Ship;
+            if (start.row > end.row) {
+                for (int i = start.row; i > end.row; i--) {
+                    field[i][start.column] = FieldStatus.Ship;
+                }
+            }
+        }
+        if (start.column < end.column) {
+            for (int i = start.column; i < end.column; i++) {
+                field[start.row][i] = FieldStatus.Ship;
+            }
+        }
+        if (start.column > end.column) {
+            for (int i = start.column; i > end.column; i--) {
+                field[start.row][i] = FieldStatus.Ship;
             }
         }
     }
+
 
     static void showRow(final int row, final FieldStatus[][] ownField, final FieldStatus[][] otherField) {
         showRowNumber(row);
@@ -414,7 +398,7 @@ public class Main {
                 do {
                     startCoord = readStartCoordinate(i);
                     endCoord = readEndCoordinate(i);
-                } while (!isValidPosition(startCoord, endCoord, i, ownField)|| !isValidPosition(startCoord,endCoord,i,ownField));
+                } while (!isValidPosition(startCoord, endCoord, i, ownField) || !isValidPosition(startCoord, endCoord, i, ownField));
 
 
             } else placeShips(startCoord, endCoord, ownField);
@@ -434,7 +418,7 @@ public class Main {
                 do {
                     startCoord = getRandomCoordinate();
                     endCoord = getRandomEndCoordinate(startCoord, i);
-                } while (!noConflict(startCoord, endCoord, otherField) || !isValidPosition(startCoord,endCoord,i,otherField));
+                } while (!noConflict(startCoord, endCoord, otherField) || !isValidPosition(startCoord, endCoord, i, otherField));
             } else placeShips(startCoord, endCoord, otherField);
 
             i--;
@@ -444,8 +428,8 @@ public class Main {
 
     public static void main(String[] args) {
         FieldStatus[][] otherField = initOtherField();
-     //   FieldStatus[][] ownField = initOwnField();
-        showFields(otherField,otherField);
+        //   FieldStatus[][] ownField = initOwnField();
+        showFields(otherField, otherField);
 
     }
 }
