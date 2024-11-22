@@ -112,40 +112,58 @@ public class Main {
         switch (field) {
             case Ship:
                 System.out.print(showShips ? "O" : " ");
+                break;
             case Ship_hit:
                 System.out.print("X");
+                break;
             case Water_hit:
                 System.out.print("*");
+                break;
             case Free:
             default:
                 System.out.print(" ");
         }
     }
 
+    // static void placeShips(final Coordinate start, final Coordinate end, final FieldStatus[][] field) {
+//
+    //      if (onOneLine(start, end) == false) {
+    //} else if (onOneLine(start, end)) {
+    //   if (noConflict(start, end, field)) {
+    //           for (int i = start.row; i < end.row; i++) {
+    //               field[i][start.column] = FieldStatus.Ship;
+    //         }
+    //   }
+    //          if (start.row > end.row) {
+    //              field[i][start.column] = FieldStatus.Ship;
+    //          }
+    //    }
+    //  if (start.column < end.column) {
+    //    for (int i = start.column; i < end.column; i++) {
+    //      field[start.row][i] = FieldStatus.Ship;
+    //             }
+    //       }
+    //     if (start.column > end.column) {
+    //       for (int i = start.column; i > end.column; i--) {
+    //         field[start.row][i] = FieldStatus.Ship;
+    //   }
+    // }
+    //}
+    //}
+    //
+    // }
     static void placeShips(final Coordinate start, final Coordinate end, final FieldStatus[][] field) {
-
-        if (onOneLine(start, end) == false) {
-            System.out.println("Ungueltige Eingabe, Schiffe duerfen nicht Diagonal plaziert werden");
-        } else if (onOneLine(start, end)) {
-            if (start.row < end.row) {
-                for (int i = start.row; i < end.row; i++) {
-                    field[i][start.column] = FieldStatus.Ship;
-                }
+        if (start.column() == end.column()) {
+            for (int row = Math.min(start.row(), end.row()); row <= Math.max(start.row(), end.row()); row++) {
+                field[start.column()][row] = FieldStatus.Ship;
             }
-            if (start.row > end.row) {
-                for (int i = start.row; i > end.row; i--) {
-                    field[i][start.column] = FieldStatus.Ship;
-                }
-            }
-            if (start.column < end.column) {
-                for (int i = start.column; i < end.column; i++) {
-                    field[start.row][i] = FieldStatus.Ship;
-                }
-            }
-            if (start.column > end.column) {
-                for (int i = start.column; i > end.column; i--) {
-                    field[start.row][i] = FieldStatus.Ship;
-                }
+        } else {
+            for (
+                    int column = Math.min(start.column(), end.column());
+                    column <= Math.max(start.column(), end.column());
+                    column++
+            ) {
+                field[column][start.row()] = FieldStatus.Ship;
             }
         }
     }
@@ -392,11 +410,11 @@ public class Main {
             Coordinate startCoord = readStartCoordinate(i);
             Coordinate endCoord = readEndCoordinate(i);
             if (!isValidPosition(startCoord, endCoord, i, ownField)) {
-                System.out.println("Ungueltige Eingabe, das Schiff soll die Laenge "+i+" haben. Koordinaten duerfen nicht diagonal sein");
+                System.out.println("Ungueltige Eingabe, das Schiff soll die Laenge " + i + " haben. Koordinaten duerfen nicht diagonal sein");
                 do {
                     startCoord = readStartCoordinate(i);
                     endCoord = readEndCoordinate(i);
-                } while (!isValidPosition(startCoord, endCoord, i, ownField));
+                } while (!isValidPosition(startCoord, endCoord, i, ownField)|| !isValidPosition(startCoord,endCoord,i,ownField));
 
 
             } else placeShips(startCoord, endCoord, ownField);
@@ -416,7 +434,7 @@ public class Main {
                 do {
                     startCoord = getRandomCoordinate();
                     endCoord = getRandomEndCoordinate(startCoord, i);
-                } while (!noConflict(startCoord, endCoord, otherField));
+                } while (!noConflict(startCoord, endCoord, otherField) || !isValidPosition(startCoord,endCoord,i,otherField));
             } else placeShips(startCoord, endCoord, otherField);
 
             i--;
@@ -425,8 +443,9 @@ public class Main {
     }
 
     public static void main(String[] args) {
-       initOtherField();
-       initOwnField();
+        FieldStatus[][] otherField = initOtherField();
+     //   FieldStatus[][] ownField = initOwnField();
+        showFields(otherField,otherField);
 
     }
 }
