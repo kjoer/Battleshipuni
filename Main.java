@@ -57,11 +57,11 @@ public class Main {
     }
 
     static int getMinSurroundingColumn(final Coordinate start, final Coordinate end) {
-        return Math.max(Main.SIZE - 1, Math.min(start.column(), end.column()) - 1);
+        return Math.max(0, Math.min(start.column(), end.column()) - 1);
     }
 
     static int getMinSurroundingRow(final Coordinate start, final Coordinate end) {
-        return Math.max(Main.SIZE - 1, Math.min(start.row(), end.row()) - 1);
+        return Math.max(0, Math.min(start.row(), end.row()) - 1);
     }
 
     static Coordinate convertToCoordinate(final String input) {
@@ -73,7 +73,7 @@ public class Main {
                 int rowCoords = Integer.parseInt(columnCoords);
                 i--;
                 rowCoords--;
-                return new Coordinate(rowCoords, i);
+                return new Coordinate(i, rowCoords);
             }
         }
 
@@ -96,13 +96,13 @@ public class Main {
         do {
             int randomEndDirection = Utility.getRandomInt(4);
             if (randomEndDirection == 0) {
-                endCoordinate = new Coordinate(start.column + distance, start.row);
+                endCoordinate = new Coordinate(start.column + distance - 1, start.row);
             } else if (randomEndDirection == 1) {
-                endCoordinate = new Coordinate(start.column - distance, start.row);
+                endCoordinate = new Coordinate(start.column - distance + 1, start.row);
             } else if (randomEndDirection == 2) {
-                endCoordinate = new Coordinate(start.column, start.row - distance);
+                endCoordinate = new Coordinate(start.column, start.row - distance + 1);
             } else if (randomEndDirection == 3) {
-                endCoordinate = new Coordinate(start.column, start.row + distance);
+                endCoordinate = new Coordinate(start.column, start.row + distance - 1);
             }
         } while (endCoordinate != null && (endCoordinate.column < 1 || endCoordinate.column > SIZE || endCoordinate.row < 1 || endCoordinate.row > SIZE));
         return endCoordinate;
@@ -127,30 +127,29 @@ public class Main {
 
     static void placeShips(final Coordinate start, final Coordinate end, final FieldStatus[][] field) {
         if (onOneLine(start, end) == false) {
+            throw new IllegalArgumentException();
         } else if (onOneLine(start, end)) {
             if (noConflict(start, end, field)) {
-                for (int i = start.row; i < end.row; i++) {
-                    field[i][start.column] = FieldStatus.Ship;
+                if (start.row < end.row) {
+                    for (int i = start.row; i <= end.row; i++) {
+                        field[start.column][i] = FieldStatus.Ship;
+                    }
+                } else if (start.row > end.row) {
+                    for (int i = start.row; i >= end.row; i--) {
+                        field[start.column][i] = FieldStatus.Ship;
+                    }
+                } else if (start.column < end.column) {
+                    for (int i = start.column; i <= end.column; i++) {
+                        field[i][start.row] = FieldStatus.Ship;
+                    }
+                } else if (start.column > end.column) {
+                    for (int i = start.column; i >= end.column; i--) {
+                        field[i][start.row] = FieldStatus.Ship;
+                    }
                 }
-            }
-            if (start.row > end.row) {
-                for (int i = start.row; i > end.row; i--) {
-                    field[i][start.column] = FieldStatus.Ship;
-                }
-            }
-        }
-        if (start.column < end.column) {
-            for (int i = start.column; i < end.column; i++) {
-                field[start.row][i] = FieldStatus.Ship;
-            }
-        }
-        if (start.column > end.column) {
-            for (int i = start.column; i > end.column; i--) {
-                field[start.row][i] = FieldStatus.Ship;
             }
         }
     }
-
 
     static void showRow(final int row, final FieldStatus[][] ownField, final FieldStatus[][] otherField) {
         showRowNumber(row);
@@ -161,7 +160,7 @@ public class Main {
         }
         System.out.print("  ");
         showRowNumber(row);
-        System.out.print("|");
+        System.out.print("  |");
         for (int i = 0; i < SIZE; i++) {
             showFieldStatus(otherField[i][row], false);
             System.out.print("|");
@@ -349,7 +348,7 @@ public class Main {
 
     static boolean isValidPosition(final Coordinate start, final Coordinate end, final int length, final FieldStatus[][] field) {
         int userProvidedLength = distance(start, end);
-        if (userProvidedLength == length) {
+        if (userProvidedLength == length - 1) {
             return noConflict(start, end, field);
         }
         return false;
@@ -388,21 +387,22 @@ public class Main {
     static FieldStatus[][] initOwnField() {
         FieldStatus[][] ownField = new FieldStatus[SIZE][SIZE];
         setAllFree(ownField);
-        int i = 5;
-        while (i >= 2) {
+        int shipLength = 5;
+        while (shipLength >= 2) {
             showFields(ownField, ownField);
-            Coordinate startCoord = readStartCoordinate(i);
-            Coordinate endCoord = readEndCoordinate(i);
-            if (!isValidPosition(startCoord, endCoord, i, ownField)) {
-                System.out.println("Ungueltige Eingabe, das Schiff soll die Laenge " + i + " haben. Koordinaten duerfen nicht diagonal sein");
+            Coordinate startCoord = readStartCoordinate(shipLength);
+            Coordinate endCoord = readEndCoordinate(shipLength);
+            if (!isValidPosition(startCoord, endCoord, shipLength, ownField) || !noConflict(startCoord, endCoord, ownField)) {
+                System.out.println("Ungueltige Eingabe, das Schiff soll die Laenge " + shipLength + " haben. Koordinaten duerfen nicht diagonal sein");
                 do {
-                    startCoord = readStartCoordinate(i);
-                    endCoord = readEndCoordinate(i);
-                } while (!isValidPosition(startCoord, endCoord, i, ownField) || !isValidPosition(startCoord, endCoord, i, ownField));
+                    startCoord = readStartCoordinate(shipLength);
+                    endCoord = readEndCoordinate(shipLength);
+                } while (!isValidPosition(startCoord, endCoord, shipLength, ownField) || !noConflict(startCoord, endCoord, ownField));
 
 
-            } else placeShips(startCoord, endCoord, ownField);
-            i--;
+            }
+            placeShips(startCoord, endCoord, ownField);
+            shipLength--;
         }
         return ownField;
     }
@@ -410,26 +410,31 @@ public class Main {
     static FieldStatus[][] initOtherField() {
         FieldStatus[][] otherField = new FieldStatus[SIZE][SIZE];
         setAllFree(otherField);
-        int i = 5;
-        while (i >= 2) {
+        int shipLength = 5;
+        while (shipLength >= 2) {
             Coordinate startCoord = getRandomCoordinate();
-            Coordinate endCoord = getRandomEndCoordinate(startCoord, i);
-            if (!noConflict(startCoord, endCoord, otherField)) {
+            Coordinate endCoord = getRandomEndCoordinate(startCoord, shipLength);
+            if (!noConflict(startCoord, endCoord, otherField) || !isValidPosition(startCoord, endCoord, shipLength, otherField)) {
                 do {
                     startCoord = getRandomCoordinate();
-                    endCoord = getRandomEndCoordinate(startCoord, i);
-                } while (!noConflict(startCoord, endCoord, otherField) || !isValidPosition(startCoord, endCoord, i, otherField));
-            } else placeShips(startCoord, endCoord, otherField);
-
-            i--;
+                    endCoord = getRandomEndCoordinate(startCoord, shipLength);
+                } while (!noConflict(startCoord, endCoord, otherField) || !isValidPosition(startCoord, endCoord, shipLength, otherField));
+            }
+            placeShips(startCoord, endCoord, otherField);
+            shipLength--;
         }
         return otherField;
     }
 
     public static void main(String[] args) {
         FieldStatus[][] otherField = initOtherField();
-        //   FieldStatus[][] ownField = initOwnField();
+        FieldStatus[][] ownField = initOwnField();
         showFields(otherField, otherField);
+        do {
+            turn(ownField, otherField);
+
+        } while (!endCondition(ownField, otherField));
+        outputWinner(ownField, otherField);
 
     }
 }
